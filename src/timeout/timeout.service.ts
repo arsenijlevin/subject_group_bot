@@ -56,7 +56,6 @@ Ends in: ${timeoutTime} milliseconds
     if (!addedPhones) return;
 
     const filteredPhones = addedPhones.filter(phone => phoneToExpire.phoneNumber !== phone.phoneNumber);
-    console.log(filteredPhones);
     
     this.session.setAddedPhones(filteredPhones);
 
