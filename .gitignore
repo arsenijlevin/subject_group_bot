@@ -1,0 +1,11 @@
+node_modules
+
+.env
+
+*.*.map
+
+*.d.ts
+
+dist
+
+sessions.json

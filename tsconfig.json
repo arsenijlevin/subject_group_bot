@@ -1,0 +1,59 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "baseUrl": "./",
+    "skipLibCheck": true,
+    "lib": [
+      "ESNext",
+      "dom"
+    ],
+    "outDir": "./dist",
+    "paths": {
+      "@context/*": [
+        "./src/core/context/*"
+      ],
+      "@abstract/*": [
+        "./src/core/abstract/*"
+      ],
+      "@config/*": [
+        "./src/core/config/*"
+      ],
+      "@container/*": [
+        "./src/core/container/*"
+      ],
+      "@session/*": [
+        "./src/core/session/*"
+      ],
+      "@actions/*": [
+        "./src/actions/*"
+      ],
+      "@commands/*": [
+        "./src/commands/*"
+      ],
+      "@triggers/*": [
+        "./src/triggers/*"
+      ],
+      "@questions/*": [
+        "./src/questions/*"
+      ],
+      "@timeout/*": [
+        "./src/timeout/*"
+      ],
+    },
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "types": [
+      "reflect-metadata"
+    ],
+  },
+  "ts-node": {
+    "require": [
+      "tsconfig-paths/register"
+    ]
+  },
+  "include": ["./src/**/*.ts"]
+}

@@ -1,0 +1,126 @@
+{
+    "env": {
+        "es2021": true,
+        "node": true
+    },
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:@typescript-eslint/recommended-requiring-type-checking"
+    ],
+    "plugins": [
+        "@typescript-eslint"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "root": true,
+    "parserOptions": {
+        "project": true,
+        "tsconfigRootDir": "./"
+    },
+    "ignorePatterns": [
+        "node_modules",
+        "**/*.js"
+    ],
+    "rules": {
+        "@typescript-eslint/no-misused-promises": [
+            "error",
+            {
+                "checksVoidReturn": {
+                    "arguments": false,
+                    "attributes": false
+                }
+            }
+        ],
+        "comma-dangle": [
+            "error",
+            {
+                "arrays": "always",
+                "objects": "always",
+                "imports": "never",
+                "exports": "never",
+                "functions": "never"
+            }
+        ],
+        "semi-style": [
+            "error",
+            "last"
+        ],
+        "semi": ["error", "always"],
+        "@typescript-eslint/member-ordering": [
+            "warn",
+            {
+                "default": [
+                    "signature",
+                    "field",
+                    "constructor",
+                    "method",
+                    "set",
+                    "get"
+                ]
+            }
+        ],
+        "@typescript-eslint/explicit-member-accessibility": [
+            "warn",
+            {
+                "accessibility": "explicit",
+                "overrides": {
+                    "constructors": "no-public"
+                }
+            }
+        ],
+        "@typescript-eslint/no-unused-vars": [
+            "warn",
+            {
+                "args": "none"
+            }
+        ],
+        "@typescript-eslint/no-var-requires": "off",
+        "@typescript-eslint/explicit-function-return-type": "warn",
+        "camelcase": "off",
+        "no-unused-vars": "off",
+        "require-jsdoc": "off",
+        "valid-jsdoc": "off",
+        "indent": [
+            "warn",
+            2,
+            {
+                "SwitchCase": 1
+            }
+        ],
+        "no-console": "off",
+        "prefer-template": "off",
+        "eqeqeq": [
+            "error",
+            "smart"
+        ],
+        "max-len": [
+            "warn",
+            {
+                "code": 120,
+                "tabWidth": 4,
+                "ignoreComments": true, //"comments": 80
+                "ignoreUrls": true,
+                "ignoreStrings": true,
+                "ignoreTemplateLiterals": true,
+                "ignoreRegExpLiterals": true
+            }
+        ],
+        "object-curly-spacing": [
+            "error",
+            "always"
+        ],
+        "no-var": "warn",
+        "no-nested-ternary": "warn",
+        "no-template-curly-in-string": "warn",
+        "no-self-compare": "warn",
+        "import/prefer-default-export": "off",
+        "arrow-body-style": "warn",
+        "import/no-extraneous-dependencies": [
+            "off",
+            {
+                "devDependencies": false
+            }
+        ],
+        "linebreak-style": "off"
+    }
+}
