@@ -14,7 +14,6 @@ export interface AdminSessionData extends SessionData {
 }
 
 export interface UserSessionData extends SessionData {
-  processingAnswer: boolean,
   isPhoneVerified: boolean,
   isEnteringPhone: boolean,
   isEnteringFullName: boolean,
@@ -34,22 +33,13 @@ export interface Survey {
   startTime: string,
   endTime: string,
   current: CurrentSurveyStage,
-  results: SurveyResult[]
+  result: SurveyResult
 }
 
 export interface CurrentSurveyStage {
-  competenceAreaIndex: number,
-  sectionIndex: number,
   questionIndex: number
 }
 
 export interface SurveyResult {
-  competenceAreaIndex: number,
-  areaResults: SectionResult[]
-}
-
-export interface SectionResult {
-  sectionIndex: number,
-  sectionResults: number[],
-  sectionSum: number
+  answers: number[]
 }

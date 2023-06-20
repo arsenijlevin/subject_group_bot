@@ -1,45 +1,38 @@
 import { injectable } from "inversify";
-import { CompetenceAreas, IQuestionService, QuestionSection } from "./questions.interface";
+import { IQuestionService, Question } from "./questions.interface";
 import * as fs from "fs";
 
 @injectable()
 export class QuestionService implements IQuestionService {
-  private competenceAreas: CompetenceAreas[] = [];
+  private questions: Question[] = [];
 
   constructor() {
     const questionsFromFile = fs.readFileSync("questions.json");
 
-    this.competenceAreas = JSON.parse(questionsFromFile.toString()) as CompetenceAreas[];
+    this.questions = JSON.parse(questionsFromFile.toString()) as Question[];
 
-    if (this.competenceAreas.length === 0) {
-      throw new Error("No competenceAreas in questions.json");
+    if (this.questions.length === 0) {
+      throw new Error("No questions in questions.json");
     }
   }
-
-  public getCompetenceAreas(): CompetenceAreas[] {
-    return this.competenceAreas;
+  public getQuestions(): Question[] {
+    return this.questions;
   }
 
-  public getSections(areaIndex : number): QuestionSection[] {
-    return this.competenceAreas[areaIndex].sections;
+  public getFirstQuestion(): Question {
+    return this.questions[0];
   }
 
-  public getFirstSection(areaIndex: number): QuestionSection {
-    return this.competenceAreas[areaIndex].sections[0];
+  public getQuestion(index: number): Question {
+    return this.questions[index];
   }
 
-  public getSection(areaIndex:number, sectionIndex: number): QuestionSection {
-    return this.competenceAreas[areaIndex].sections[sectionIndex];
-  }
+  public getFormattedQuestion(index: number): string {
+    const question = this.getQuestion(index);
+    const questionTitle = `<b>${question.title}</b>`;
+    const questionText = question.text;
+    const questionNumber = `${index + 1}.`;
 
-  public getFormattedQuestion(competenceAreaIndex: number, sectionIndex: number, questionIndex: number): string {
-    const competenceArea = this.competenceAreas[competenceAreaIndex];
-    const section = competenceArea.sections[sectionIndex];
-
-    const competenceTitleText = `<b>Элемент компетентности «${competenceArea.title.toUpperCase()}»</b>  `;
-    const sectionTitleText = `<b>Блок: ${section.sectionName}</b>`;
-    const questionText = section.sectionQuestions[questionIndex];
-
-    return `${competenceTitleText}\n${sectionTitleText}\n\n${questionText}`;
+    return `${questionTitle}\n\n${questionNumber} ${questionText}`;
   }
 }

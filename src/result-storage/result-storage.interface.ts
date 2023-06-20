@@ -7,13 +7,14 @@ export interface IResultStorageService {
 }
 
 export interface IResultStorage {
-  save(data: StorageData) : Promise<void>;
+  save(data: StorageData) : void;
   loadStorage(): Promise<void>;
   init(): Promise<void>;
   increaseCapacity(value : number): Promise<void>
 }
 
 export type StorageData = {
+  id: number,
   phoneNumber : string,
   fullName : string,
   nickname : string,

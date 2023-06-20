@@ -1,18 +1,11 @@
 export interface IQuestionService {
-  getSections(areaIndex: number): QuestionSection[]
-  getFirstSection(areaIndex: number): QuestionSection
-  getSection(areaIndex: number, sectionIndex: number): QuestionSection
-  getFormattedQuestion(competenceAreaIndex: number, sectionIndex: number, questionIndex: number): string
-  getCompetenceAreas(): CompetenceAreas[]
+  getQuestions(): Question[]
+  getFirstQuestion(): Question
+  getQuestion(index: number): Question
+  getFormattedQuestion(index: number): string
 }
 
-export interface QuestionSection {
-  sectionName: string,
-  sectionQuestions: string[]
-}
-
-export interface CompetenceAreas {
+export interface Question {
   title: string,
-  sections: QuestionSection[],
-  maxBadSections: number
+  text: string
 }

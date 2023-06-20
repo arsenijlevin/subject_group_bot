@@ -36,7 +36,6 @@ export class StartCommand extends Command {
         isEnteringPhone: false,
         isEnteringFullName: false,
         fullName: "",
-        processingAnswer: false,
         nickname: "",
         phoneNumber: "",
         survey: {
@@ -44,11 +43,11 @@ export class StartCommand extends Command {
           isFinished: false,
           startTime: "",
           endTime: "",
-          results: [],
+          result: {
+            answers: [],
+          },
           current: {
-            competenceAreaIndex: 0,
             questionIndex: 0,
-            sectionIndex: 0,
           }, 
         },
       } as UserSessionData;
@@ -58,8 +57,8 @@ export class StartCommand extends Command {
   }
 
   private async handleUserStart(ctx: CommandsContext): Promise<void> {
-    await ctx.reply("Для продолжения Вам необходимо поделиться контактом", Markup.keyboard([
-      Markup.button.contactRequest("Поделиться контактом"),
+    await ctx.reply("Добрый день! Пожалуйста, отправьте ваш контакт, чтобы пройти авторизацию.", Markup.keyboard([
+      Markup.button.contactRequest("Отправить контакт"),
     ]).resize());
   }
 

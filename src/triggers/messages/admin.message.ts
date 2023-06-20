@@ -56,7 +56,7 @@ export class AdminMessage extends Message {
       }
 
       if (session.addedPhones.map(phone => phone.phoneNumber).includes(phoneNumberText)) {
-        await ctx.reply("Данный телефонный номер уже добавлен.");
+        await ctx.reply("Данный телефонный номер был добавлен ранее.");
         return;
       }
 
@@ -69,10 +69,10 @@ export class AdminMessage extends Message {
 
       this.timeoutService.addPhoneExpireTimeout(addedPhone);
 
-      await ctx.reply(`Телефонный номер: <b>${phoneNumberText}</b> успешно добавлен!`, { parse_mode: "HTML", });
+      await ctx.reply(`✅ Телефонный номер: <b>${phoneNumberText}</b> успешно добавлен!`, { parse_mode: "HTML", });
 
     } catch (err) {
-      await ctx.reply("Некорректный номер телефона.");
+      await ctx.reply("❌ Некорректный номер телефона.");
     }
   }
 }

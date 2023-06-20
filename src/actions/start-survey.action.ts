@@ -7,16 +7,12 @@ import { inject } from "inversify";
 import { Messages } from "../messages";
 import { DateTime } from "luxon"; 
 
-interface StartSurveyData {
-  startAreaIndex: number
-}
-
 export class StartSurveyAction extends Action {
   constructor(
     @inject(TYPES.IQuestionService) private readonly questionService: IQuestionService,
     @inject(TYPES.Messages) private readonly messages: Messages
   ) {
-    super(/^{"startAreaIndex":.+?}+$/);
+    super("start_survey");
   }
 
   public async handle(ctx: ActionsContext): Promise<void> {
@@ -28,11 +24,9 @@ export class StartSurveyAction extends Action {
 
     if (currentSession.survey.isFinished) return;
     
-    const response = JSON.parse(ctx.match.input) as StartSurveyData;
-    const areaIndex = response.startAreaIndex;
 
     try {
-      await ctx.deleteMessage();
+      await ctx.editMessageReplyMarkup(undefined);
     } catch (error) {
       // suppress error while fast clicking on buttons
       return;
@@ -42,23 +36,10 @@ export class StartSurveyAction extends Action {
     currentSession.survey.isOngoing = true;
     currentSession.survey.startTime = DateTime.now().toISO() || "";
 
-    currentSession.survey.current.competenceAreaIndex = areaIndex;
-    currentSession.survey.current.sectionIndex = 0;
     currentSession.survey.current.questionIndex = 0;
 
-    const formattedQuestion = this.questionService.getFormattedQuestion(areaIndex, 0, 0);
+    const formattedQuestion = this.questionService.getFormattedQuestion(0);
 
-    await this.messages.replyWithSurveyButtons(ctx, formattedQuestion);
-
-
-    currentSession.survey.results.push({
-      competenceAreaIndex: areaIndex,
-      areaResults: this.questionService.getSections(areaIndex).map((_, index) => ({
-        sectionIndex: index,
-        sectionResults: [],
-        sectionSum: 0,
-      })),
-    });
-    
+    await this.messages.replyWithSurveyButtons(ctx, formattedQuestion);    
   }
 }

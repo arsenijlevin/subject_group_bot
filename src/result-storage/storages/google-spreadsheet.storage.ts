@@ -1,13 +1,23 @@
 import { IConfigService } from "@config/config.interface";
 import TYPES from "@container/types";
 import { IQuestionService } from "@questions/questions.interface";
-import { GoogleSpreadsheet, TextFormat } from "google-spreadsheet";
+import { GoogleSpreadsheet } from "google-spreadsheet";
 import { inject, injectable } from "inversify";
+import { Answers } from "src/messages";
 import { IResultStorage, StorageData } from "../result-storage.interface";
+
+interface TimeoutUser {
+  saveData: StorageData,
+  timeout: NodeJS.Timeout
+}
 
 @injectable()
 export class GoogleSpreadsheetStorage implements IResultStorage {
   public storage: GoogleSpreadsheet;
+
+  private delaySaveTimeouts: TimeoutUser[] = [];
+
+  private readonly delayInMilliseconds = 10000;
 
   constructor(
     @inject(TYPES.IConfigService) private readonly configService: IConfigService,
@@ -17,6 +27,42 @@ export class GoogleSpreadsheetStorage implements IResultStorage {
   }
 
   public async save(data: StorageData): Promise<void> {
+    try {
+      await this.saveToSheet(data);
+    } catch (err) {
+      await this.loadStorage();
+      this.delaySave(data);
+    }
+  }
+
+  public async init(): Promise<void> {
+    await this.storage.useServiceAccountAuth({
+      client_email: this.configService.get("GOOGLE_SERVICE_ACCOUNT_EMAIL"),
+      private_key: this.configService.getGoogleAPIPrivateKey(),
+    });
+
+    await this.storage.loadInfo();
+
+    await this.loadStorage();
+
+    const mainSheet = this.storage.sheetsByIndex[0];
+    await this.storage.sheetsByIndex[0].resize({ rowCount: 150, columnCount: mainSheet.columnCount, });
+  }
+
+  public async loadStorage(): Promise<void> {
+    try {
+      await this.storage.sheetsByIndex[0].loadCells();
+    } catch (error) {
+      return;
+    }
+  }
+
+  public async increaseCapacity(value: number): Promise<void> {
+    const mainSheet = this.storage.sheetsByIndex[0];
+    await mainSheet.resize({ rowCount: 150, columnCount: mainSheet.columnCount + value, });
+  }
+
+  private async saveToSheet(data: StorageData): Promise<void> {
     const sheet = this.storage.sheetsByIndex[0];
 
     if (!sheet) {
@@ -24,7 +70,7 @@ export class GoogleSpreadsheetStorage implements IResultStorage {
     }
 
     let rowIndex = 0;
-    let columnIndex = 1;
+    let columnIndex = 2;
     let cellValue = sheet.getCell(rowIndex, columnIndex).value?.toString();
 
 
@@ -41,87 +87,66 @@ export class GoogleSpreadsheetStorage implements IResultStorage {
 
     rowIndex += 2;
 
-    this.questionService.getCompetenceAreas().forEach((area, areaIndex) => {
-      area.sections.forEach((section, sectionIndex) => {
-        const areaResult = data.survey.results.find(area => area.competenceAreaIndex === areaIndex)?.areaResults || [];
-        const sectionResult = areaResult?.find(result => result.sectionIndex === sectionIndex);
-        const sectionResultSum = sectionResult?.sectionSum;
+    this.questionService.getQuestions().forEach((_, index) => {
+      let answer = data.survey.result.answers[index] || "";
 
-        const sectionResultPercent =
-          sectionResultSum ? (sectionResultSum / (section.sectionQuestions.length * 5)) * 100 : 0;
-        sheet.getCell(rowIndex++, columnIndex).value = sectionResultSum ? `${sectionResultSum} (${sectionResultPercent.toFixed(2)}%)` : "";
+      switch (answer) {
+        case Answers.YES: {
+          answer = "Да";
+          break;
+        }
+        case Answers.NO: {
+          answer = "Нет";
+          break;
+        }
+        default: {
+          answer = "";
+          break;
+        }
+      }
 
-        section.sectionQuestions.forEach((_, questionIndex) => {
-          const answer = sectionResult?.sectionResults[questionIndex];
-
-          sheet.getCell(rowIndex++, columnIndex).value = answer || "";
-        });
-      });
-    });
-
-    rowIndex += 2;
-
-
-    this.questionService.getCompetenceAreas().map((area, areaIndex) => {
-      const areaResults = data.survey.results.find(result => result.competenceAreaIndex === areaIndex)?.areaResults;
-
-      const unsortedSectionResults = areaResults?.map(result => ({
-        index: result.sectionIndex,
-        sum: result.sectionSum,
-      }));
-      const sortedSectionResults = unsortedSectionResults?.sort((a, b) => a.sum - b.sum);
-      const minimumSectionsIndices =
-        sortedSectionResults?.slice(0, area.maxBadSections).map(result => result.index);
-
-      area.sections.map((section, sectionIndex) => {
-        const areaResult = data.survey.results.find(area => area.competenceAreaIndex === areaIndex)?.areaResults || [];
-        const sectionResult = areaResult?.find(result => result.sectionIndex === sectionIndex);
-        const sectionResultSum = sectionResult?.sectionSum;
-
-        const sectionResultPercent =
-          sectionResultSum ? ((sectionResultSum / (section.sectionQuestions.length * 5)) * 100).toFixed(0) : 0;
-
-        const sectionResultText = `${sectionResultSum || ""} (${sectionResultPercent || ""} %)`;
-
-        const textFormat: TextFormat = {
-          bold: minimumSectionsIndices?.includes(sectionIndex),
-        };
-        sheet.getCell(rowIndex, columnIndex).textFormat = sectionResultSum ? textFormat : {};
-        sheet.getCell(rowIndex++, columnIndex).value = sectionResultSum ? sectionResultText : "";
-      });
-
-      rowIndex += 2;
-      // const sectionResult = data.survey.sectionResults[index];
-      // const sectionResultPercent = (sectionResult / (section.sectionQuestions.length * 5)) * 100;
-      // const sectionResultText = sectionResult ? `${sectionResult} (${sectionResultPercent.toFixed(2)}%)` : "";
-      // const textFormat: TextFormat = {
-      //   bold: minimumSectionsIndices.includes(index),
-      // };
-
-      // sheet.getCell(rowIndex, columnIndex).textFormat = textFormat;
-      // sheet.getCell(rowIndex++, columnIndex).value = sectionResultText;
+      sheet.getCell(rowIndex++, columnIndex).value = answer;
     });
 
     await sheet.saveUpdatedCells();
   }
 
-  public async init(): Promise<void> {
-    await this.storage.useServiceAccountAuth({
-      client_email: this.configService.get("GOOGLE_SERVICE_ACCOUNT_EMAIL"),
-      private_key: this.configService.getGoogleAPIPrivateKey(),
+  private delaySave(data: StorageData): void {
+    const timeoutUserObject = this.delaySaveTimeouts.find(timeout => timeout.saveData.id === data.id);
+
+    if (timeoutUserObject) {
+      timeoutUserObject.saveData = data;
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      const timeoutUserObject = this.delaySaveTimeouts.find(timeout => timeout.saveData.id === data.id);
+
+      if (!timeoutUserObject) return;
+
+      await this.loadStorage();
+      await this.save(timeoutUserObject.saveData);
+
+      this.clearDelaySaveTimeout(data.id);
+    }, this.delayInMilliseconds);
+
+    this.delaySaveTimeouts.push({
+      saveData: data,
+      timeout: timeout,
     });
 
-    await this.storage.loadInfo();
-
-    await this.storage.sheetsByIndex[0].resize({ rowCount: 250, columnCount: 20, });
+    console.log(`Timeout sheet added for user ${data.id}`);
   }
 
-  public async loadStorage(): Promise<void> {
-    await this.storage.sheetsByIndex[0].loadCells();
-  }
+  private clearDelaySaveTimeout(userId: number): void {
+    const timeoutUserObject = this.delaySaveTimeouts.find(timeout => timeout.saveData.id === userId);
 
-  public async increaseCapacity(value: number): Promise<void> {
-    const mainSheet = this.storage.sheetsByIndex[0];
-    await mainSheet.resize({ rowCount: 250, columnCount: mainSheet.columnCount + value, });
+    if (!timeoutUserObject) return;
+
+    clearTimeout(timeoutUserObject.timeout);
+    this.delaySaveTimeouts = this.delaySaveTimeouts
+      .filter(saveTimeout => saveTimeout.saveData.id !== userId);
+
+    console.log(`Timeout sheet removed for user ${timeoutUserObject.saveData.id}`);
   }
 }

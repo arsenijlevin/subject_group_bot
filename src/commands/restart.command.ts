@@ -19,7 +19,7 @@ export class RestartCommand extends Command {
     if (this.session.isAdmin(ctx.session)) return;
 
     ctx.session = undefined;
-    await ctx.reply("Бот перезапущен!\n\n<b>/start</b> - начать взаимодействие с ботом.", {
+    await ctx.reply("✅ Бот перезапущен!\n\n<b>/start</b> - начать взаимодействие с ботом.", {
       reply_markup: Markup.removeKeyboard().reply_markup,
       parse_mode: "HTML",
     });

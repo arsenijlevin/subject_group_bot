@@ -33,7 +33,6 @@ import { QuestionService } from '@questions/questions.service';
 import { AnswerSurveyAction } from '@actions/answer-survey.action';
 import { TimeoutService } from 'src/timeout/timeout.service';
 import { ITimeoutService } from 'src/timeout/timeout.interface';
-import { ContinueSurveyAction } from '@actions/continue-survey-area.action';
 import { NullAction } from '@actions/null.action';
 
 const container = new Container({
@@ -44,7 +43,6 @@ const container = new Container({
 
 container.bind<Action>(TYPES.Action).to(StartSurveyAction);
 container.bind<Action>(TYPES.Action).to(AnswerSurveyAction);
-container.bind<Action>(TYPES.Action).to(ContinueSurveyAction);
 container.bind<Action>(TYPES.Action).to(NullAction);
 
 container.bind<Command>(TYPES.Command).to(StartCommand);
