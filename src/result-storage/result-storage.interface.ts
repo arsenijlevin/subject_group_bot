@@ -7,7 +7,7 @@ export interface IResultStorageService {
 }
 
 export interface IResultStorage {
-  save(data: StorageData) : void;
+  save(data: StorageData) : Promise<void>;
   loadStorage(): Promise<void>;
   init(): Promise<void>;
   increaseCapacity(value : number): Promise<void>

@@ -25,7 +25,7 @@ export class AdminMessage extends Message {
       return;
     }
 
-    const endDateTime = DateTime.now().plus({ seconds: 20, }).toISO();
+    const endDateTime = DateTime.now().plus({ days: 1, }).toISO();
 
     if (!endDateTime) return;
 
