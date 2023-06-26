@@ -70,7 +70,7 @@ export class GoogleSpreadsheetStorage implements IResultStorage {
     }
 
     let rowIndex = 0;
-    let columnIndex = 2;
+    let columnIndex = 3;
     let cellValue = sheet.getCell(rowIndex, columnIndex).value?.toString();
 
 
